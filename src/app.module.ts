@@ -7,6 +7,7 @@ import { Reservation } from './entities/reservation.entity';
 import { ReservationService } from './reservation/reservation.service';
 import { ReservationController } from './reservation/reservation.controller';
 import { AuthModule } from './auth/auth.module';
+import { EmailService } from './email/email.service';
 import * as fs from 'fs';
 
 @Module({
@@ -32,7 +33,7 @@ import * as fs from 'fs';
     TypeOrmModule.forFeature([User, Course, Reservation]),
     AuthModule,
   ],
-  providers: [ReservationService],
+  providers: [ReservationService, EmailService],
   controllers: [ReservationController],
 })
 export class AppModule {}

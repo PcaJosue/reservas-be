@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Reservation } from '../entities/reservation.entity';
 import { User } from '../entities/user.entity';
 import { Course } from '../entities/course.entity';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class ReservationService {
@@ -16,6 +17,8 @@ export class ReservationService {
     
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
+
+    private readonly emailService: EmailService
   ) {}
 
   async createReservation(userId: number, courseId: number, date: Date): Promise<Reservation> {
@@ -45,6 +48,44 @@ export class ReservationService {
     reservation.date = date;
     reservation.status = 'confirmed';
 
-    return this.reservationRepository.save(reservation);
+    const savedReservation = await this.reservationRepository.save(reservation);
+
+    await this.sendReservationConfirmation(user, course, date, 'created');
+
+    return savedReservation;
+  }
+
+  async modifyReservation(reservationId: number, newDate: Date): Promise<Reservation> {
+    const reservation = await this.reservationRepository.findOne({ where: { id: reservationId }, relations: ['user', 'course'] });
+
+    if (!reservation) throw new BadRequestException('Reservation not found');
+
+    reservation.date = newDate;
+    const updatedReservation = await this.reservationRepository.save(reservation);
+
+    await this.sendReservationConfirmation(reservation.user, reservation.course, newDate, 'modified');
+
+    return updatedReservation;
+  }
+
+  async cancelReservation(reservationId: number): Promise<void> {
+    const reservation = await this.reservationRepository.findOne({ where: { id: reservationId }, relations: ['user', 'course'] });
+
+    if (!reservation) throw new BadRequestException('Reservation not found');
+
+    await this.reservationRepository.remove(reservation);
+
+    await this.sendReservationConfirmation(reservation.user, reservation.course, reservation.date, 'canceled');
+  }
+  
+
+  private async sendReservationConfirmation(user: User, course: Course, date: Date, action: string) {
+    const reservationDate = typeof date === 'string' ? new Date(date) : date;
+
+    const subject = `Your reservation has been ${action}`;
+    const text = `Your reservation for ${course.name} on ${reservationDate} has been ${action}.`;
+    const html = `<p>Your reservation for <strong>${course.name}</strong> on <strong>${reservationDate}</strong> has been ${action}.</p>`;
+
+    await this.emailService.sendReservationEmail(user.email, subject, text, html);
   }
 }
