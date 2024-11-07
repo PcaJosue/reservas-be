@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Reservation } from './reservation.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('user')
 export class User {
@@ -13,6 +14,7 @@ export class User {
   email: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @OneToMany(() => Reservation, (reservation) => reservation.user)
