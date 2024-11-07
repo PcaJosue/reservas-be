@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Course } from './entities/course.entity';
 import { Reservation } from './entities/reservation.entity';
+import { ReservationService } from './reservation/reservation.service';
+import { ReservationController } from './reservation/reservation.controller';
 import * as fs from 'fs';
 
 @Module({
@@ -28,5 +30,7 @@ import * as fs from 'fs';
     }),
     TypeOrmModule.forFeature([User, Course, Reservation]),
   ],
+  providers: [ReservationService],
+  controllers: [ReservationController],
 })
 export class AppModule {}
