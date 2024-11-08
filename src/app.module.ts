@@ -8,6 +8,9 @@ import { ReservationService } from './reservation/reservation.service';
 import { ReservationController } from './reservation/reservation.controller';
 import { AuthModule } from './auth/auth.module';
 import { EmailService } from './email/email.service';
+import { CourseService } from './course/course.service';
+import { CourseController } from './course/course.controller';
+import { CourseModule } from './course/course.module';
 import * as fs from 'fs';
 
 @Module({
@@ -32,8 +35,9 @@ import * as fs from 'fs';
     }),
     TypeOrmModule.forFeature([User, Course, Reservation]),
     AuthModule,
+    CourseModule,
   ],
-  providers: [ReservationService, EmailService],
-  controllers: [ReservationController],
+  providers: [ReservationService, EmailService, CourseService],
+  controllers: [ReservationController, CourseController],
 })
 export class AppModule {}
