@@ -21,6 +21,13 @@ export class ReservationService {
     private readonly emailService: EmailService
   ) {}
 
+  async getReservationsByUserId(userId: number): Promise<Reservation[]> {
+    return this.reservationRepository.find({
+      where: { user: { id: userId } },
+      relations: ['course'],
+    });
+  }
+
   async createReservation(userId: number, courseId: number, date: Date): Promise<Reservation> {
     const course = await this.courseRepository.findOne({ where: { id: courseId } });
     const user = await this.userRepository.findOne({ where: { id: userId } });
