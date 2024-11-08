@@ -4,7 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../entities/user.entity';
-import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +13,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signup(name: string, email: string, password: string): Promise<User> {
+  async signup(name: string, email: string, password: string): Promise<{ accessToken: string }>  {
     const existingUser = await this.userRepository.findOne({ where: { email } });
     if (existingUser) {
       throw new BadRequestException('Email already in use');
@@ -23,9 +22,11 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = this.userRepository.create({ name, email, password: hashedPassword });
-    const savedUser = await this.userRepository.save(user);
+    await this.userRepository.save(user);
 
-    return plainToClass(User, savedUser);
+    const payload = { userId: user.id };
+    const accessToken = this.jwtService.sign(payload);
+    return { accessToken };
   }
 
   async login(email: string, password: string): Promise<{ accessToken: string }> {

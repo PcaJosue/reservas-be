@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Put, Param, Delete, Request } from '@nestjs/common';
 import { ReservationService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Reservation } from '../entities/reservation.entity';
@@ -10,8 +10,10 @@ export class ReservationController {
   constructor(private readonly reservationService: ReservationService) {}
 
   @Post()
-  async create(@Body() createReservationDto: CreateReservationDto): Promise<Reservation> {
-    const { userId, courseId, date } = createReservationDto;
+  async create(@Body() createReservationDto: CreateReservationDto,
+  @Request() req): Promise<Reservation> {
+    const { courseId, date } = createReservationDto;
+    const userId = req.user.userId;
     return this.reservationService.createReservation(userId, courseId, date);
   }
 
